@@ -12,4 +12,7 @@ void main(List<String> arguments) {
   String e = '12';
   int f = a + int.parse(e);
   print(f);
+  List<String> names = ['Alice', 'Bob', 'Charlie'];
+  print(names);
+  print('nama yang ke-1 adalah: ${names[0]}');
 }
