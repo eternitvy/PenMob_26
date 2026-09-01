@@ -9,4 +9,7 @@ void main(List<String> arguments) {
   print(b);
   print(c);
   print(d);
+  String e = '12';
+  int f = a + int.parse(e);
+  print(f);
 }
