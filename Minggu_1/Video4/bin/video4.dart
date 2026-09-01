@@ -4,5 +4,10 @@ const int age = 20;
 
 void main(List<String> arguments) {
   // print('Hello world: ${video4.calculate()}!');
-  print('Nama saya $name, umur saya $age tahun');
+  // name = "Abelia";
+  // const String name = "Abelia";
+  final String nama = "Abelia";
+  final String umur = "20";
+  print('Nama saya $nama, umur saya $umur tahun');
+  print('Nama saya $nama, umur saya $umur tahun');
 }
