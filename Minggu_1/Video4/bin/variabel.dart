@@ -18,4 +18,7 @@ void main(List<String> arguments) {
   print('nama yang ke-1 adalah: ${names[0]}');
   print(numbers);
   print('jumlah elemen pada list numbers adalah: ${numbers.length}');
+  Map<String, int> umur = {'Alice': 25, 'Bob': 30, 'Charlie': 35};
+  print(umur);
+  print('umur Alice adalah: ${umur['Alice']}');
 }
