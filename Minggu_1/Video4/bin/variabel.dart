@@ -1,10 +1,10 @@
 import 'package:video4/video4.dart' as video4;
 
 void main(List<String> arguments) {
-  int a = 10;
-  double b = 3.14;
-  String c = 'Hello, Dart!';
-  bool d = true;
+  // int a = 10;
+  // double b = 3.14;
+  // String c = 'Hello, Dart!';
+  // bool d = true;
   // print(a);
   // print(b);
   // print(c);
