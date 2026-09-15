@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart'; // Import package audio
 import 'mahasiswa.dart';
 import 'lirik.dart';
 
@@ -6,32 +7,15 @@ void main() {
   runApp(const Regita());
 }
 
-// 1. MaterialApp
 class Regita extends StatelessWidget {
   const Regita({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Definisi Warna Custom: Baby Blue & Beige
-    const babyBlue = Color(0xFFAEC6CF);
-    const beige = Color(0xFFF5F5DC);
-
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Aplikasi Lirik Lagu',
       theme: ThemeData(
-        scaffoldBackgroundColor: beige,
-        primaryColor: babyBlue,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: babyBlue,
-          foregroundColor: Colors.black87,
-        ),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: babyBlue,
-          primary: babyBlue,
-          surface: beige,
-        ),
-        useMaterial3: true,
+        scaffoldBackgroundColor: const Color(0xFFE0F7FA), // Baby Blue
       ),
       home: const LirikDetailPage(),
     );
@@ -46,7 +30,6 @@ class LirikDetailPage extends StatefulWidget {
 }
 
 class _LirikDetailPageState extends State {
-  // Instansiasi dari file mahasiswa.dart & lirik.dart
   final mahasiswa1 = mahasiswa(nama: 'Regita', umur: 20, kelas: 'TI3C');
   final liriklagu1 = lirik(
     judul: 'Summer Eyes',
@@ -68,437 +51,405 @@ class _LirikDetailPageState extends State {
         'You\n',
   );
 
-  // State untuk widget interaktif
-  double _fontSize = 15.0;
-  bool _isFavorite = false;
-  bool _darkTheme = false;
-  int _audioQuality = 1;
-  final TextEditingController _commentController = TextEditingController();
+  // Inisialisasi Audio Player
+  late AudioPlayer _audioPlayer;
+  bool _isPlaying = false;
+
+  double _sliderValue = 0.3;
+  bool _isSwitched = true;
+  bool _isChecked = false;
+  int _radioSelected = 1;
   final PageController _pageController = PageController();
 
   @override
+  void initState() {
+    super.initState();
+    _audioPlayer = AudioPlayer();
+
+    // Mendengarkan status perubahan audio (apakah sedang play atau pause)
+    _audioPlayer.onPlayerStateChanged.listen((state) {
+      setState(() {
+        _isPlaying = state == PlayerState.playing;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose(); // Bersihkan memori saat halaman ditutup
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  // Fungsi untuk Play / Pause Lagu
+  Future _togglePlayPause() async {
+    try {
+      if (_isPlaying) {
+        await _audioPlayer.pause();
+      } else {
+        // Panggil file lagu dari folder assets (pastikan file lagu ada di assets/audio/lagu.mp3)
+        // Atau jika ditaruh di assets/image/ atau folder khusus:
+        await _audioPlayer.play(AssetSource('audio/summer_eyes.mp3'));
+      }
+    } catch (e) {
+      print("Error pemutaran audio: $e");
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // 2. SafeArea
     return SafeArea(
-      // 3. Scaffold
       child: Scaffold(
-        // 4. AppBar
         appBar: AppBar(
-          title: Text(liriklagu1.judul),
+          backgroundColor: const Color(0xFF0288D1),
+          title: Text(
+            liriklagu1.judul,
+            style: const TextStyle(color: Colors.white),
+          ),
+          iconTheme: const IconThemeData(color: Colors.white),
           actions: [
-            // 5. IconButton
             IconButton(
               icon: const Icon(Icons.share),
               onPressed: () {},
             ),
+            PopupMenuButton(
+              itemBuilder: (context) => [
+                const PopupMenuItem(value: '1', child: Text('Pengaturan')),
+              ],
+            ),
           ],
         ),
-
-        // 6. Drawer
         drawer: Drawer(
-          backgroundColor: const Color(0xFFFAF0E6), // Linen/Beige terang
-          // 7. ListView
-          child: ListView(
-            children: [
-              UserAccountsDrawerHeader(
-                decoration: const BoxDecoration(color: Color(0xFFAEC6CF)),
-                accountName: Text(
-                  mahasiswa1.nama,
-                  style: const TextStyle(color: Colors.black87),
-                ),
-                accountEmail: Text(
-                  'Kelas: \({mahasiswa1.kelas} (\){mahasiswa1.umur} th)',
-                  style: const TextStyle(color: Colors.black87),
-                ),
-                // 8. CircleAvatar
-                currentAccountPicture: CircleAvatar(
-                  backgroundColor: const Color(0xFFF5F5DC),
-                  child: Text(
-                    mahasiswa1.nama[0],
-                    style: const TextStyle(color: Colors.black87),
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: UserAccountsDrawerHeader(
+                  accountName: Text(mahasiswa1.nama),
+                  accountEmail: Text('Kelas: \({mahasiswa1.kelas} (\){mahasiswa1.umur} th)'),
+                  currentAccountPicture: CircleAvatar(
+                    child: Text(mahasiswa1.nama[0]),
                   ),
                 ),
               ),
-              const ListTile(
-                leading: Icon(Icons.music_note, color: Colors.black87),
-                title: Text('Daftar Lirik'),
+              SliverFillRemaining(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    const ListTile(
+                      leading: Icon(Icons.music_note),
+                      title: Text('Daftar Lirik'),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: OutlinedButton.icon(
+                        onPressed: () {},
+                        icon: const Icon(Icons.download),
+                        label: const Text('Unduh Lirik'),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
         ),
-
-        // 9. CustomScrollView
-        body: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              // 10. Scrollbar & 11. SingleChildScrollView
-              child: Scrollbar(
-                child: SingleChildScrollView(
-                  // 12. Padding
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    // 13. Row (Membuat 2 Kolom: Kiri untuk Gambar, Kanan untuk Lirik)
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // ================= KOLOM KIRI (GAMBAR & INFO) =================
-                        // 14. Expanded (Kolom Kiri)
-                        Expanded(
-                          flex: 1,
-                          // 15. Column
-                          child: Column(
-                            children: [
-                              // 16. Card
-                              Card(
-                                color: const Color(0xFFE8F1F5), // Light Baby Blue Tint
-                                elevation: 3,
-                                // 17. Container
-                                child: Container(
-                                  padding: const EdgeInsets.all(12.0),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ==================== KOLOM KIRI: FOTO ====================
+              Expanded(
+                flex: 1,
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Hero(
+                        tag: 'albumCover',
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Image.asset(
+                            'assets/image/langit.jpg',
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.indigo.shade200,
+                                child: const Center(
                                   child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      // 18. Stack
-                                      Stack(
-                                        alignment: Alignment.center,
-                                        children: [
-                                          // 19. Image
-                                          Image.network(
-                                            'https://picsum.photos/300/300',
-                                            height: 180,
-                                            width: double.infinity,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (_, __, ___) => Container(
-                                              height: 180,
-                                              color: const Color(0xFFAEC6CF),
-                                              // 20. Center
-                                              child: const Center(
-                                                // 21. Icon
-                                                child: Icon(
-                                                  Icons.album,
-                                                  size: 70,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          const Positioned(
-                                            bottom: 8,
-                                            right: 8,
-                                            // 22. ImageIcon
-                                            child: ImageIcon(
-                                              AssetImage('assets/icon.png'),
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 12),
-                                      // 23. Hero
-                                      Hero(
-                                        tag: 'title',
-                                        child: Material(
-                                          color: Colors.transparent,
-                                          // 24. Text & 25. TextStyle
-                                          child: Text(
-                                            liriklagu1.judul,
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black87,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          const CircleAvatar(
-                                            radius: 12,
-                                            backgroundColor: Color(0xFFAEC6CF),
-                                            child: Text(
-                                              'K',
-                                              style: TextStyle(
-                                                fontSize: 10,
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                          ),
-                                          // 26. SizedBox
-                                          const SizedBox(width: 8),
-                                          // 27. Flexible
-                                          Flexible(
-                                            child: Text(
-                                              liriklagu1.penyanyi,
-                                              style: const TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.black54,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
+                                      Icon(Icons.broken_image, size: 80, color: Colors.white),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        'Gambar tidak ditemukan',
+                                        style: TextStyle(color: Colors.white, fontSize: 12),
                                       ),
                                     ],
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 12),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: CircleAvatar(
+                          backgroundColor: Colors.white70,
+                          radius: 18,
+                          child: ImageIcon(
+                            const AssetImage('assets/image/langit.jpg'),
+                            size: 20,
+                            color: Colors.indigo.shade800,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
 
-                              // Form Interaksi Komentar di Kolom Kiri
-                              // 28. Form
-                              Form(
+              // ==================== KOLOM KANAN: LIRIK & KONTROL ====================
+              Expanded(
+                flex: 2,
+                child: Card(
+                  elevation: 4,
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Header Kolom Kanan
+                      Container(
+                        padding: const EdgeInsets.all(16.0),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF01579B),
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    liriklagu1.judul,
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            RichText(
+                              text: TextSpan(
+                                text: 'Penyanyi: ',
+                                style: const TextStyle(color: Colors.white70, fontSize: 13),
+                                children: [
+                                  TextSpan(
+                                    text: liriklagu1.penyanyi,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 6,
+                              children: const [
+                                Chip(label: Text('#Pop', style: TextStyle(fontSize: 10))),
+                                Chip(label: Text('#Acoustic', style: TextStyle(fontSize: 10))),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Body PageView (Lirik & Pengaturan)
+                      Expanded(
+                        child: PageView(
+                          controller: _pageController,
+                          children: [
+                            Scrollbar(
+                              child: SingleChildScrollView(
+                                padding: const EdgeInsets.all(16.0),
+                                child: SelectableText(
+                                  liriklagu1.isiLirik,
+                                  textAlign: TextAlign.left,
+                                  style: const TextStyle(fontSize: 15, height: 1.5),
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: SingleChildScrollView(
                                 child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    // 29. TextField
+                                    const Text('Cari Lirik:', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    const SizedBox(height: 4),
                                     const TextField(
                                       decoration: InputDecoration(
-                                        labelText: 'Cari Judul Lain',
+                                        hintText: 'Ketik judul lagu...',
+                                        isDense: true,
                                         border: OutlineInputBorder(),
-                                        filled: true,
-                                        fillColor: Colors.white70,
                                       ),
                                     ),
                                     const SizedBox(height: 8),
-                                    // 30. TextFormField
                                     TextFormField(
-                                      controller: _commentController,
                                       decoration: const InputDecoration(
-                                        labelText: 'Tulis Komentar',
+                                        labelText: 'Catatan Lagu',
+                                        isDense: true,
                                         border: OutlineInputBorder(),
-                                        filled: true,
-                                        fillColor: Colors.white70,
                                       ),
                                     ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-
-                              // 31. ButtonBar
-                              ButtonBar(
-                                alignment: MainAxisAlignment.center,
-                                children: [
-                                  // 32. OutlinedButton
-                                  OutlinedButton(
-                                    onPressed: () => _commentController.clear(),
-                                    child: const Text('Reset'),
-                                  ),
-                                ],
-                              ),
-
-                              // 33. Wrap
-                              Wrap(
-                                spacing: 6.0,
-                                children: const [
-                                  Chip(
-                                    label: Text('#Pop'),
-                                    backgroundColor: Color(0xFFAEC6CF),
-                                  ),
-                                  Chip(
-                                    label: Text('#Acoustic'),
-                                    backgroundColor: Color(0xFFAEC6CF),
-                                  ),
-                                  Chip(
-                                    label: Text('#Indie'),
-                                    backgroundColor: Color(0xFFAEC6CF),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(width: 16), // Jarak Antar Kolom
-
-                        // ================= KOLOM KANAN (LIRIK & KONTROL) =================
-                        // 34. Expanded (Kolom Kanan)
-                        Expanded(
-                          flex: 1,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Pengaturan Teks & Fitur
-                              Row(
-                                children: [
-                                  const Text('Font: '),
-                                  Expanded(
-                                    // 35. Slider
-                                    child: Slider(
-                                      value: _fontSize,
-                                      min: 12.0,
-                                      max: 22.0,
-                                      activeColor: const Color(0xFFAEC6CF),
-                                      onChanged: (val) => setState(() => _fontSize = val),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  const Text('Gelap:'),
-                                  // 36. Switch
-                                  Switch(
-                                    value: _darkTheme,
-                                    activeColor: const Color(0xFFAEC6CF),
-                                    onChanged: (val) => setState(() => _darkTheme = val),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  const Text('Favorit:'),
-                                  // 37. Checkbox
-                                  Checkbox(
-                                    value: _isFavorite,
-                                    activeColor: const Color(0xFFAEC6CF),
-                                    onChanged: (val) =>
-                                        setState(() => _isFavorite = val ?? false),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  const Text('Kualitas: '),
-                                  // 38. Radio
-                                  Radio(
-                                    value: 1,
-                                    groupValue: _audioQuality,
-                                    activeColor: const Color(0xFFAEC6CF),
-                                    onChanged: (val) => setState(() => _audioQuality = val!),
-                                  ),
-                                  const Text('SD'),
-                                  Radio(
-                                    value: 2,
-                                    groupValue: _audioQuality,
-                                    activeColor: const Color(0xFFAEC6CF),
-                                    onChanged: (val) => setState(() => _audioQuality = val!),
-                                  ),
-                                  const Text('HD'),
-                                ],
-                              ),
-
-                              // 39. Align
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: const Text(
-                                  'Lirik Lagu:',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-
-                              // 40. RichText (Tampilan Lirik)
-                              Card(
-                                color: const Color(0xFFFAF0E6),
-                                elevation: 1,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12.0),
-                                  child: RichText(
-                                    textAlign: TextAlign.left,
-                                    text: TextSpan(
-                                      style: TextStyle(
-                                        color: Colors.black87,
-                                        fontSize: _fontSize,
-                                        height: 1.5,
-                                      ),
+                                    const SizedBox(height: 8),
+                                    Row(
                                       children: [
-                                        TextSpan(
-                                          text: liriklagu1.isiLirik,
-                                          style: const TextStyle(
-                                            fontStyle: FontStyle.italic,
-                                          ),
+                                        const Text('Fav:'),
+                                        Checkbox(
+                                          value: _isChecked,
+                                          onChanged: (val) => setState(() => _isChecked = val ?? false),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        const Text('Auto Scroll:'),
+                                        Switch(
+                                          value: _isSwitched,
+                                          onChanged: (val) => setState(() => _isSwitched = val),
                                         ),
                                       ],
                                     ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-
-                              // 41. GridView
-                              SizedBox(
-                                height: 80,
-                                child: GridView.count(
-                                  crossAxisCount: 3,
-                                  children: List.generate(
-                                    3,
-                                    (index) => Card(
-                                      color: const Color(0xFFE8F1F5),
-                                      child: Center(
-                                        child: Text(
-                                          'Album ${index + 1}',
-                                          style: const TextStyle(fontSize: 10),
+                                    Row(
+                                      children: [
+                                        const Text('Mode:'),
+                                        Radio(
+                                          value: 1,
+                                          groupValue: _radioSelected,
+                                          onChanged: (val) => setState(() => _radioSelected = val!),
                                         ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-
-                              // 42. PageView
-                              SizedBox(
-                                height: 50,
-                                child: PageView(
-                                  controller: _pageController,
-                                  children: [
-                                    Container(
-                                      color: const Color(0xFFAEC6CF),
-                                      child: const Center(
-                                        child: Text(
-                                          'Info 1: Geser ke samping',
-                                          style: TextStyle(color: Colors.white, fontSize: 12),
+                                        const Text('Loop'),
+                                        Radio(
+                                          value: 2,
+                                          groupValue: _radioSelected,
+                                          onChanged: (val) => setState(() => _radioSelected = val!),
                                         ),
-                                      ),
-                                    ),
-                                    Container(
-                                      color: const Color(0xFFD3D3D3),
-                                      child: const Center(
-                                        child: Text(
-                                          'Info 2: Rekomendasi Lirik',
-                                          style: TextStyle(color: Colors.black87, fontSize: 12),
-                                        ),
-                                      ),
+                                        const Text('Shuffle'),
+                                      ],
                                     ),
                                   ],
                                 ),
                               ),
-                            ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Slider
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        child: Slider(
+                          value: _sliderValue,
+                          onChanged: (val) => setState(() => _sliderValue = val),
+                        ),
+                      ),
+
+                      // Watermark
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 2.0),
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            'create by regita',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic,
+                              color: Colors.grey,
+                            ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+
+                      // Tombol Kontrol Musik (Fungsional Play/Pause)
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.skip_previous),
+                              onPressed: () => _pageController.previousPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              ),
+                            ),
+                            // Tombol Play/Pause Dinamis
+                            IconButton(
+                              icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
+                              onPressed: _togglePlayPause,
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.skip_next),
+                              onPressed: () => _pageController.nextPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-
-        // 43. FloatingActionButton
         floatingActionButton: FloatingActionButton(
-          backgroundColor: const Color(0xFFAEC6CF),
+          backgroundColor: const Color(0xFF0288D1),
           onPressed: () {
-            // 44. BottomSheet
             showModalBottomSheet(
               context: context,
-              backgroundColor: const Color(0xFFF5F5DC),
               builder: (context) => Container(
                 padding: const EdgeInsets.all(16.0),
-                height: 150,
+                height: 220,
                 child: Column(
                   children: [
                     Text('Diputar oleh: ${mahasiswa1.nama}'),
                     const SizedBox(height: 10),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFAEC6CF),
-                        foregroundColor: Colors.white,
+                    TextFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'Masukkan komentar',
+                        border: OutlineInputBorder(),
                       ),
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Tutup'),
+                    ),
+                    const SizedBox(height: 10),
+                    ButtonBar(
+                      children: [
+                        OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Batal'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Kirim'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
