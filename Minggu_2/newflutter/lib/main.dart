@@ -14,6 +14,9 @@ class Regita extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        scaffoldBackgroundColor: const Color(0xFFE0F7FA), // Warna Baby Blue
+      ),
       home: LirikDetailPage(),
     );
   }
@@ -48,7 +51,9 @@ class LirikDetailPage extends StatelessWidget {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: Text(liriklagu1.judul),
+          backgroundColor: const Color(0xFF0288D1), // Biru lebih tua
+          title: Text(liriklagu1.judul, style: const TextStyle(color: Colors.white)),
+          iconTheme: const IconThemeData(color: Colors.white),
           actions: [
             IconButton(
               icon: const Icon(Icons.share),
@@ -78,72 +83,148 @@ class LirikDetailPage extends StatelessWidget {
             ],
           ),
         ),
-        body: Scrollbar(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Card(
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ==================== KOLOM KIRI: FULL FOTO ====================
+              Expanded(
+                flex: 1,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.asset(
+                    'assets/image/langit.jpg',
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.indigo.shade200,
+                        child: const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.broken_image, size: 80, color: Colors.white),
+                              SizedBox(height: 8),
+                              Text(
+                                'Gambar tidak ditemukan',
+                                style: TextStyle(color: Colors.white, fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+
+              // ==================== KOLOM KANAN: LIRIK & KONTROL ====================
+              Expanded(
+                flex: 2,
+                child: Card(
                   elevation: 4,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Container(
-                            height: 150,
-                            color: Colors.indigo.shade100,
-                            child: const Center(
-                              child: Icon(Icons.album, size: 80, color: Colors.indigo),
-                            ),
-                          ),
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Header di Kolom Kanan (Warna Biru Tua)
+                      Container(
+                        padding: const EdgeInsets.all(16.0),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF01579B), // Biru lebih tua dari background
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
                         ),
-                        const SizedBox(height: 12),
-                        Hero(
-                          tag: 'title',
-                          child: Material(
-                            color: Colors.transparent,
-                            child: Text(
-                              liriklagu1.judul,
-                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const CircleAvatar(
-                              radius: 12,
-                              child: Text('K', style: TextStyle(fontSize: 10)),
+                            Text(
+                              liriklagu1.judul,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
-                            const SizedBox(width: 8),
-                            Text(liriklagu1.penyanyi),
+                            const SizedBox(height: 4),
+                            Text(
+                              liriklagu1.penyanyi,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.white70,
+                              ),
+                            ),
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+
+                      // Isi Lirik (Rata Kiri / Left Align)
+                      Expanded(
+                        child: Scrollbar(
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.all(16.0),
+                            child: SelectableText(
+                              liriklagu1.isiLirik,
+                              textAlign: TextAlign.left, // Text rata kiri
+                              style: const TextStyle(fontSize: 15, height: 1.5),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Watermark (Align Right)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            'create by regita',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Tombol Kontrol: Previous, Pause, Next di Paling Bawah
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.skip_previous),
+                              onPressed: () {},
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.pause),
+                              onPressed: () {},
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.skip_next),
+                              onPressed: () {},
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 20),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: const Text(
-                    'Lirik Lagu:',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                SelectableText(
-                  liriklagu1.isiLirik,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 16, height: 1.5),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
         floatingActionButton: FloatingActionButton(
+          backgroundColor: const Color(0xFF0288D1),
           onPressed: () {
             showModalBottomSheet(
               context: context,
@@ -163,7 +244,7 @@ class LirikDetailPage extends StatelessWidget {
               ),
             );
           },
-          child: const Icon(Icons.info),
+          child: const Icon(Icons.info, color: Colors.white),
         ),
       ),
     );
