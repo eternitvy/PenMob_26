@@ -1,0 +1,13 @@
+{
+  "message": {
+    "topic": "pengumuman-kampus",
+    "notification": {
+      "title": "Jadwal kuliah berubah",
+      "body": "Kelas Mobile pindah ke Ruang A2 jam 13.00"
+    },
+    "data": {
+      "route": "/pengumuman/3",
+      "id": "3"
+    }
+  }
+}

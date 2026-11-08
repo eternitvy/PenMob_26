@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "468849636548",
+    "project_id": "campusnotify-bdded",
+    "storage_bucket": "campusnotify-bdded.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:468849636548:android:c4b603e2f50f9ff7214591",
+        "android_client_info": {
+          "package_name": "id.ac.polinema.campus_notify"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMCvEn4DR2HwuIYjD7yINP73J7YE-kHEU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
